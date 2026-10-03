@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#fff8fc" />
+<title>イコノイジョイ 推しタイプ診断</title>
+<style>
+  :root{
+    --bg:#fff8fc;--paper:#fff;--ink:#29242a;--muted:#756d76;--line:#eee4ec;
+    --love:#ef6ca8;--noteq:#6aaee8;--joy:#f4bd3f;--accent:#8657d8;
+    --shadow:0 16px 42px rgba(64,35,56,.10);--radius:24px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif;color:var(--ink);background:
+    radial-gradient(circle at 8% 0%,rgba(239,108,168,.16),transparent 25%),
+    radial-gradient(circle at 100% 12%,rgba(106,174,232,.16),transparent 28%),
+    radial-gradient(circle at 50% 100%,rgba(244,189,63,.14),transparent 30%),var(--bg);min-height:100vh}
+  button{font:inherit}
+  .wrap{width:min(980px,100%);margin:auto;padding:26px 16px 64px}
+  .hero{padding:28px 6px 20px;text-align:center}
+  .eyebrow{display:inline-flex;gap:8px;align-items:center;padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.78);font-size:12px;font-weight:800;color:var(--muted)}
+  h1{font-size:clamp(31px,8vw,58px);line-height:1.02;margin:16px 0 12px;letter-spacing:-.04em}
+  .grad{background:linear-gradient(100deg,var(--love),var(--accent) 46%,var(--noteq) 72%,#d89d10);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{max-width:680px;margin:0 auto;color:var(--muted);line-height:1.8;font-size:14px}
+  .notice{margin:18px auto 0;max-width:760px;padding:11px 14px;border-radius:14px;background:#fff;border:1px dashed var(--line);color:#807780;font-size:11px;line-height:1.6}
+  .panel{background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border:1px solid rgba(238,228,236,.95);box-shadow:var(--shadow);border-radius:var(--radius);padding:18px;margin-top:18px}
+  .group-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 2px 14px}
+  .group-title{display:flex;align-items:center;gap:10px;font-weight:900;font-size:19px}
+  .dot{width:13px;height:13px;border-radius:50%;box-shadow:0 0 0 5px rgba(0,0,0,.03)}
+  .count{font-size:12px;color:var(--muted);font-weight:700}
+  .members{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+  .member{position:relative;border:1px solid var(--line);background:#fff;border-radius:18px;min-height:86px;padding:14px 8px 11px;cursor:pointer;transition:.16s ease;text-align:center;color:var(--ink)}
+  .member:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(60,40,55,.08)}
+  .member:active{transform:scale(.98)}
+  .member .avatar{display:grid;place-items:center;margin:0 auto 8px;width:35px;height:35px;border-radius:50%;font-size:14px;font-weight:900;background:#f8f2f6;color:#766975;transition:.16s}
+  .member .name{font-size:13px;font-weight:850;letter-spacing:-.02em}
+  .member .check{position:absolute;right:8px;top:7px;width:21px;height:21px;border-radius:50%;display:grid;place-items:center;font-size:12px;color:white;opacity:0;transform:scale(.7);transition:.16s}
+  .member.selected{border-width:2px;padding:13px 7px 10px;box-shadow:0 9px 24px rgba(72,42,64,.10)}
+  .member.selected .check{opacity:1;transform:scale(1)}
+  .love .member.selected{border-color:var(--love)} .love .member.selected .avatar,.love .check{background:var(--love);color:#fff}
+  .noteq .member.selected{border-color:var(--noteq)} .noteq .member.selected .avatar,.noteq .check{background:var(--noteq);color:#fff}
+  .joy .member.selected{border-color:var(--joy)} .joy .member.selected .avatar,.joy .check{background:var(--joy);color:#fff}
+  .sticky{position:sticky;bottom:12px;z-index:8;margin-top:18px}
+  .actionbar{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:20px;box-shadow:0 16px 35px rgba(60,40,55,.15)}
+  .chosen{flex:1;min-width:0;font-size:12px;color:var(--muted);line-height:1.5}
+  .chosen strong{color:var(--ink)}
+  .diagnose{border:0;border-radius:15px;padding:13px 18px;font-weight:900;color:#fff;background:linear-gradient(110deg,var(--love),var(--accent),var(--noteq));cursor:pointer;white-space:nowrap;box-shadow:0 9px 22px rgba(134,87,216,.22);transition:.16s}
+  .diagnose:disabled{filter:grayscale(.7);opacity:.4;cursor:not-allowed;box-shadow:none}
+  .diagnose:not(:disabled):hover{transform:translateY(-1px)}
+  #result{display:none;margin-top:22px;scroll-margin-top:18px}
+  #result.show{display:block;animation:pop .45s cubic-bezier(.2,.9,.3,1.15)}
+  @keyframes pop{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}
+  .result-card{overflow:hidden;position:relative;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);border-radius:30px;padding:28px}
+  .result-card:before{content:"";position:absolute;inset:-140px -120px auto auto;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(239,108,168,.17),rgba(106,174,232,.05) 58%,transparent 68%);pointer-events:none}
+  .result-kicker{font-size:12px;font-weight:900;letter-spacing:.08em;color:var(--accent);text-transform:uppercase}
+  .type{font-size:clamp(31px,7vw,48px);margin:8px 0 6px;letter-spacing:-.04em;line-height:1.1}
+  .type-sub{color:var(--muted);line-height:1.75;margin:0 0 18px;max-width:760px}
+  .oshi-row{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 22px}
+  .oshi-chip{padding:8px 11px;border-radius:999px;font-size:12px;font-weight:850;border:1px solid var(--line);background:#fff}
+  .section-title{font-size:14px;font-weight:900;margin:22px 0 10px}
+  .tags{display:flex;flex-wrap:wrap;gap:8px}
+  .tag{padding:8px 11px;border-radius:999px;background:#f6f1f8;font-size:12px;font-weight:800}
+  .bars{display:grid;gap:10px}
+  .bar-row{display:grid;grid-template-columns:108px 1fr 38px;gap:9px;align-items:center;font-size:12px}
+  .bar-name{font-weight:750}.bar-track{height:9px;border-radius:999px;background:#f1eaf0;overflow:hidden}.bar-fill{height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--love),var(--accent),var(--noteq));transform-origin:left;animation:grow .65s ease both}@keyframes grow{from{transform:scaleX(0)}}
+  .bar-val{text-align:right;font-weight:850;color:var(--muted)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+  .mini{background:#fbf8fb;border:1px solid var(--line);border-radius:18px;padding:16px;line-height:1.7;font-size:13px}
+  .mini b{display:block;margin-bottom:5px;font-size:13px}
+  .result-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:14px;padding:11px 14px;font-weight:850;cursor:pointer;color:var(--ink)}
+  .btn.primary{border:0;color:#fff;background:var(--ink)}
+  .foot{margin-top:20px;text-align:center;color:#8a8189;font-size:11px;line-height:1.7}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,14px);background:#29242a;color:#fff;border-radius:999px;padding:10px 14px;font-size:12px;font-weight:800;opacity:0;pointer-events:none;transition:.2s;z-index:30}.toast.show{opacity:1;transform:translate(-50%,0)}
+  @media(max-width:720px){.members{grid-template-columns:repeat(3,minmax(0,1fr))}.result-card{padding:22px 18px}.grid2{grid-template-columns:1fr}.bar-row{grid-template-columns:92px 1fr 34px}.panel{padding:14px}.wrap{padding-inline:12px}}
+  @media(max-width:390px){.members{grid-template-columns:repeat(2,minmax(0,1fr))}.actionbar{align-items:stretch;flex-direction:column}.diagnose{width:100%}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="hero">
+    <div class="eyebrow">💘 FAN-MADE OSHI CHECK</div>
+    <h1><span class="grad">イコノイジョイ</span><br>推しタイプ診断</h1>
+    <p class="lead">＝LOVE・≠ME・≒JOYから推しを1人ずつ選ぶだけ。<strong>「何に惹かれるか」10種 × 「どう沼るか」12種</strong>を組み合わせて、あなたの推し傾向を診断するよ。</p>
+    <div class="notice">※非公式のファンメイド診断。2026年10月3日時点の公式プロフィール掲載メンバー（10×11×12＝1,320組）を対象に、公開上のアイドル像をヒントにしたエンタメ用パラメータで判定しています。メンバー本人の性格を断定するものではありません。</div>
+  </header>
+
+  <section class="panel love" data-group="love">
+    <div class="group-head"><div class="group-title"><span class="dot" style="background:var(--love)"></span>＝LOVE</div><div class="count">1人選択</div></div>
+    <div class="members" id="loveMembers"></div>
+  </section>
+
+  <section class="panel noteq" data-group="noteq">
+    <div class="group-head"><div class="group-title"><span class="dot" style="background:var(--noteq)"></span>≠ME</div><div class="count">1人選択</div></div>
+    <div class="members" id="noteqMembers"></div>
+  </section>
+
+  <section class="panel joy" data-group="joy">
+    <div class="group-head"><div class="group-title"><span class="dot" style="background:var(--joy)"></span>≒JOY</div><div class="count">1人選択</div></div>
+    <div class="members" id="joyMembers"></div>
+  </section>
+
+  <div class="sticky">
+    <div class="actionbar">
+      <div class="chosen" id="chosenText">あと <strong>3人</strong> 選んでね</div>
+      <button class="diagnose" id="diagnoseBtn" disabled>診断する ✨</button>
+    </div>
+  </div>
+
+  <section id="result" aria-live="polite"></section>
+  <div class="foot">IKONOIJOY 推しタイプ診断 / Fan-made prototype v4<br>120/120タイトル実出現・公式画像/ロゴ不使用</div>
+</main>
+<div class="toast" id="toast">コピーしたよ！</div>
+
+<script>
+// 診断軸（ファンメイド演出用）
+// sparkle=王道 / gap=ギャップ / calm=落ち着き / energy=明るさ / unique=個性
+// expressive=表現力 / warm=親しみ / cute=かわいさ / human=人間味
+// 数値は能力評価ではなく「推し理由としての代表度」を強制分布させた診断用ウェイトです。各メンバーは100/90/75/60/45/30/20/10/5を1回ずつ使用します。
+const members = {
+  love: [
+    {name:'大谷 映美里', s:{sparkle:90,gap:5,calm:45,energy:10,unique:75,expressive:20,warm:60,cute:100,human:30}},
+    {name:'大場 花菜', s:{sparkle:5,gap:60,calm:20,energy:45,unique:90,expressive:30,warm:75,cute:10,human:100}},
+    {name:'音嶋 莉沙', s:{sparkle:100,gap:10,calm:75,energy:20,unique:5,expressive:30,warm:60,cute:90,human:45}},
+    {name:'齋藤 樹愛羅', s:{sparkle:30,gap:90,calm:5,energy:45,unique:75,expressive:10,warm:20,cute:100,human:60}},
+    {name:'佐々木 舞香', s:{sparkle:20,gap:100,calm:75,energy:5,unique:45,expressive:90,warm:10,cute:30,human:60}},
+    {name:'髙松 瞳', s:{sparkle:100,gap:20,calm:5,energy:90,unique:10,expressive:75,warm:60,cute:45,human:30}},
+    {name:'瀧脇 笙古', s:{sparkle:45,gap:10,calm:75,energy:60,unique:5,expressive:20,warm:100,cute:30,human:90}},
+    {name:'野口 衣織', s:{sparkle:5,gap:75,calm:10,energy:45,unique:90,expressive:100,warm:30,cute:20,human:60}},
+    {name:'諸橋 沙夏', s:{sparkle:75,gap:30,calm:90,energy:5,unique:10,expressive:100,warm:20,cute:60,human:45}},
+    {name:'山本 杏奈', s:{sparkle:45,gap:10,calm:60,energy:75,unique:5,expressive:20,warm:100,cute:30,human:90}}
+  ],
+  noteq: [
+    {name:'尾木 波菜', s:{sparkle:75,gap:30,calm:5,energy:60,unique:20,expressive:10,warm:90,cute:100,human:45}},
+    {name:'落合 希来里', s:{sparkle:20,gap:60,calm:5,energy:100,unique:30,expressive:10,warm:75,cute:45,human:90}},
+    {name:'蟹沢 萌子', s:{sparkle:60,gap:100,calm:75,energy:5,unique:10,expressive:90,warm:45,cute:20,human:30}},
+    {name:'河口 夏音', s:{sparkle:5,gap:45,calm:10,energy:90,unique:100,expressive:30,warm:60,cute:20,human:75}},
+    {name:'川中子 奈月心', s:{sparkle:10,gap:90,calm:100,energy:5,unique:75,expressive:45,warm:20,cute:30,human:60}},
+    {name:'櫻井 もも', s:{sparkle:75,gap:20,calm:5,energy:60,unique:10,expressive:100,warm:45,cute:90,human:30}},
+    {name:'鈴木 瞳美', s:{sparkle:100,gap:5,calm:75,energy:30,unique:10,expressive:45,warm:60,cute:90,human:20}},
+    {name:'谷崎 早耶', s:{sparkle:90,gap:60,calm:5,energy:30,unique:20,expressive:10,warm:75,cute:100,human:45}},
+    {name:'冨田 菜々風', s:{sparkle:10,gap:90,calm:5,energy:75,unique:45,expressive:100,warm:30,cute:20,human:60}},
+    {name:'永田 詩央里', s:{sparkle:10,gap:60,calm:100,energy:5,unique:90,expressive:45,warm:30,cute:20,human:75}},
+    {name:'本田 珠由記', s:{sparkle:20,gap:30,calm:5,energy:45,unique:100,expressive:10,warm:60,cute:90,human:75}}
+  ],
+  joy: [
+    {name:'逢田 珠里依', s:{sparkle:100,gap:10,calm:90,energy:20,unique:5,expressive:75,warm:45,cute:60,human:30}},
+    {name:'天野 香乃愛', s:{sparkle:75,gap:20,calm:5,energy:90,unique:10,expressive:30,warm:60,cute:100,human:45}},
+    {name:'市原 愛弓', s:{sparkle:20,gap:100,calm:75,energy:5,unique:60,expressive:90,warm:10,cute:30,human:45}},
+    {name:'江角 怜音', s:{sparkle:5,gap:75,calm:90,energy:30,unique:60,expressive:100,warm:20,cute:10,human:45}},
+    {name:'大信田 美月', s:{sparkle:10,gap:60,calm:5,energy:100,unique:45,expressive:20,warm:75,cute:30,human:90}},
+    {name:'大西 葵', s:{sparkle:5,gap:45,calm:10,energy:75,unique:100,expressive:20,warm:60,cute:30,human:90}},
+    {name:'小澤 愛実', s:{sparkle:45,gap:20,calm:100,energy:10,unique:5,expressive:90,warm:60,cute:30,human:75}},
+    {name:'髙橋 舞', s:{sparkle:100,gap:20,calm:5,energy:60,unique:10,expressive:45,warm:75,cute:90,human:30}},
+    {name:'藤沢 莉子', s:{sparkle:10,gap:45,calm:100,energy:5,unique:60,expressive:90,warm:30,cute:20,human:75}},
+    {name:'村山 結香', s:{sparkle:30,gap:45,calm:90,energy:5,unique:10,expressive:75,warm:60,cute:20,human:100}},
+    {name:'山田 杏佳', s:{sparkle:60,gap:10,calm:5,energy:45,unique:30,expressive:20,warm:100,cute:75,human:90}},
+    {name:'山野 愛月', s:{sparkle:90,gap:60,calm:5,energy:20,unique:10,expressive:100,warm:30,cute:75,human:45}}
+  ]
+};
+
+const groupMeta = {
+  love:{label:'＝LOVE', color:'var(--love)'},
+  noteq:{label:'≠ME', color:'var(--noteq)'},
+  joy:{label:'≒JOY', color:'var(--joy)'}
+};
+const dims = {
+  sparkle:{label:'王道',emoji:'✨'}, gap:{label:'ギャップ',emoji:'🎭'}, calm:{label:'落ち着き',emoji:'🌙'},
+  energy:{label:'明るさ',emoji:'☀️'}, unique:{label:'個性',emoji:'🪩'}, expressive:{label:'表現力',emoji:'🎤'},
+  warm:{label:'親しみ',emoji:'🫶'}, cute:{label:'かわいさ',emoji:'🎀'}, human:{label:'人間味',emoji:'💭'}
+};
+let selected = {love:null,noteq:null,joy:null};
+
+function initials(name){ return name.replace(/\s/g,'').slice(-2); }
+function renderMembers(){
+  Object.entries(members).forEach(([group,list])=>{
+    const root=document.getElementById(group+'Members');
+    root.innerHTML=list.map((m,i)=>`<button class="member" data-group="${group}" data-index="${i}" aria-pressed="false"><span class="check">✓</span><span class="avatar">${initials(m.name)}</span><span class="name">${m.name}</span></button>`).join('');
+  });
+  document.querySelectorAll('.member').forEach(btn=>btn.addEventListener('click',()=>selectMember(btn)));
+}
+function selectMember(btn){
+  const group=btn.dataset.group, index=Number(btn.dataset.index);
+  selected[group]=members[group][index];
+  document.querySelectorAll(`.member[data-group="${group}"]`).forEach(b=>{b.classList.remove('selected');b.setAttribute('aria-pressed','false')});
+  btn.classList.add('selected'); btn.setAttribute('aria-pressed','true');
+  updateAction();
+}
+function updateAction(){
+  const vals=Object.values(selected), done=vals.filter(Boolean).length;
+  const btn=document.getElementById('diagnoseBtn'); btn.disabled=done!==3;
+  const text=document.getElementById('chosenText');
+  if(done===0) text.innerHTML='あと <strong>3人</strong> 選んでね';
+  else if(done<3) text.innerHTML=`${vals.filter(Boolean).map(x=>x.name.replace(/\s/g,'')).join('・')} を選択中<br>あと <strong>${3-done}人</strong>`;
+  else text.innerHTML=`<strong>${selected.love.name.replace(/\s/g,'')} × ${selected.noteq.name.replace(/\s/g,'')} × ${selected.joy.name.replace(/\s/g,'')}</strong>`;
+}
+function mean(arr){return arr.reduce((a,b)=>a+b,0)/arr.length}
+function std(arr){const m=mean(arr);return Math.sqrt(mean(arr.map(v=>(v-m)**2)))}
+
+// 前半10種：「何に惹かれるか」
+const frontTypes = {
+  gap:{label:'ギャップに弱い',copy:'予想外の一面や、普段とステージの落差が見えた瞬間に一気に刺さりやすい。'},
+  sparkle:{label:'王道を愛する',copy:'華やかさや「アイドルしてる！」感を真正面から楽しめる。'},
+  unique:{label:'個性に惹かれる',copy:'その人にしかないキャラ、言葉、空気感を見つけると急に気になり始める。'},
+  expressive:{label:'表現力に撃ち抜かれる',copy:'歌・ダンス・表情など、ステージ上で空気を変える瞬間に弱い。'},
+  warm:{label:'親しみやすさを好む',copy:'距離の近さや安心感、人との関わり方まで含めて好きになりやすい。'},
+  calm:{label:'落ち着いた魅力に惹かれる',copy:'派手さだけでなく、静かな存在感や細かい仕草をじっくり拾う。'},
+  energy:{label:'明るさに弱い',copy:'見ているだけで気分が上がる、ポジティブなエネルギーに惹かれやすい。'},
+  cute:{label:'かわいさを求める',copy:'ビジュアル、仕草、声、愛嬌など「かわいい」の供給に素直に弱い。'},
+  human:{label:'人間味に惹かれる',copy:'完璧さだけではなく、素っぽさや不器用さ、リアクションまで魅力として拾う。'},
+  broad:{label:'幅広い魅力を拾う',copy:'グループごとに違うベクトルの良さを見つけられる。推しを一つの系統に固定しない。'}
+};
+
+// 後半12種：「どう沼るか」
+const backTypes = {
+  observer:{label:'観察者タイプ',copy:'一発の派手さより、表情や言葉の細部を見つけて好きが積み上がる。'},
+  diver:{label:'沼ダイバータイプ',copy:'「気になる」が始まると関連動画や過去エピソードまで一気に潜っていく。'},
+  allaffirm:{label:'全肯定タイプ',copy:'好きになった後は供給そのものが嬉しい。推しがアイドルしているだけで満足度が高い。'},
+  watcher:{label:'見守りタイプ',copy:'活躍や成長を長く追うほど愛着が増す。推しの幸せまで気になりがち。'},
+  stage:{label:'ステージ至上主義タイプ',copy:'最終的な決定打はライブやパフォーマンス。ステージを見るたび推し度が更新される。'},
+  gradual:{label:'じわじわ沼タイプ',copy:'初見で即決というより、何度も見るうちに「この子めっちゃ良くない？」が育つ。'},
+  first:{label:'第一印象直撃タイプ',copy:'最初の数秒でビジュアルや空気感にロックオンされやすい。入口の火力が強い。'},
+  researcher:{label:'深掘り研究家タイプ',copy:'好きな理由を自分なりに言語化したくなる。推しの細かい魅力を語り始めると長い。'},
+  empathy:{label:'感情移入タイプ',copy:'素の感情や頑張りが見えるほど応援したくなる。ストーリー込みで推しが深くなる。'},
+  recharge:{label:'元気チャージタイプ',copy:'推しを見ること自体が回復アイテム。明るい供給で日常のHPを戻す。'},
+  collector:{label:'コレクタータイプ',copy:'同じ系統を集めるより、その子にしかない魅力を一人ずつ見つけて推す。'},
+  tossed:{label:'振り回されたいタイプ',copy:'予測不能な発言やギャップもご褒美。次に何をしてくるか分からない人ほど楽しい。'}
+};
+
+function computeBaselines(){
+  const all=[...members.love,...members.noteq,...members.joy];
+  const base={};
+  Object.keys(dims).forEach(k=>{
+    const vals=all.map(m=>m.s[k]);
+    base[k]={mean:mean(vals),sd:Math.max(std(vals),8)};
+  });
+  return base;
+}
+const baselines=computeBaselines();
+
+
+// v4: 1,320通りを全走査し、前半10種×後半12種の全120タイトルが実際に出るよう校正。
+// 各組み合わせは、前半/後半を独立採点した適合度をできるだけ保ちながら全体分布を最適化しています。
+const calibratedFrontKeys = ["gap", "sparkle", "unique", "expressive", "warm", "calm", "energy", "cute", "human", "broad"];
+const calibratedBackKeys = ["observer", "diver", "allaffirm", "watcher", "stage", "gradual", "first", "researcher", "empathy", "recharge", "collector", "tossed"];
+const calibratedPairByCombo = [14,86,94,94,93,26,54,86,91,87,50,90,22,93,118,118,59,33,111,93,115,98,98,94,12,23,13,61,118,34,12,14,61,12,110,13,26,26,34,34,33,33,55,26,31,55,27,30,19,30,24,24,34,31,67,23,67,24,110,13,18,90,88,88,93,30,38,90,91,38,86,88,18,90,84,66,54,26,62,14,66,62,86,18,14,86,13,23,92,26,15,86,19,87,54,90,22,78,28,47,119,34,112,114,28,112,110,13,19,30,24,24,34,31,67,19,24,67,55,19,30,30,91,31,33,26,91,26,91,91,26,30,110,57,109,49,59,27,116,57,116,104,56,110,106,105,8,107,104,104,104,59,104,104,104,8,108,118,1,7,8,8,3,49,5,3,49,4,27,33,25,31,105,32,55,59,103,104,104,107,24,119,7,29,107,97,96,109,29,96,27,109,112,78,46,47,105,32,39,52,43,44,102,38,62,54,115,115,59,27,111,54,115,68,98,22,20,92,10,109,49,32,116,50,116,3,56,2,112,83,1,1,8,97,44,59,97,97,49,100,24,107,29,29,103,32,103,55,103,101,104,97,55,33,25,31,32,32,55,32,103,104,104,97,14,86,84,84,54,87,15,86,62,15,50,14,69,74,118,113,80,105,111,21,113,98,98,20,12,14,61,64,108,118,12,14,60,17,20,16,69,74,118,115,77,33,111,21,115,106,98,22,66,89,61,60,113,113,60,17,60,65,110,12,18,90,88,42,78,94,38,18,42,17,86,18,62,86,66,66,15,69,62,14,66,62,15,18,14,86,84,84,87,87,15,14,84,20,87,18,16,78,10,46,82,119,46,23,46,113,110,38,66,89,61,67,113,29,68,17,67,68,98,12,84,93,91,115,92,27,89,86,89,102,87,90,90,93,85,95,9,95,92,86,85,92,92,85,118,93,11,11,9,107,106,93,107,8,105,6,6,6,1,1,11,11,0,2,0,5,2,6,119,83,35,35,83,35,119,83,35,107,32,11,71,95,1,7,11,35,5,95,7,5,89,85,88,93,85,47,83,95,94,90,85,102,92,88,84,90,85,84,95,95,89,90,84,89,86,90,2,93,2,6,9,95,2,86,85,102,92,6,10,83,1,1,9,73,11,9,1,97,8,6,71,95,7,24,107,35,29,95,29,96,34,109,30,93,25,35,33,35,91,30,91,107,92,85,114,94,0,10,10,119,70,94,108,108,92,2,108,9,5,5,8,107,96,117,5,96,8,100,36,4,0,0,0,1,36,4,36,0,3,4,115,83,7,7,79,35,41,119,29,101,106,47,60,71,0,61,5,7,60,10,61,5,96,4,42,88,37,40,112,109,41,88,43,41,44,40,66,94,61,64,118,118,64,22,64,60,114,42,12,2,1,0,10,10,3,2,0,3,110,6,40,4,1,4,73,11,41,4,41,100,100,4,60,108,0,61,5,29,65,108,67,96,113,61,115,94,7,25,107,35,103,94,29,101,106,85,21,74,114,117,81,74,21,21,117,20,50,21,21,81,82,82,81,81,75,74,82,80,81,76,16,16,4,40,9,119,52,16,36,17,22,16,82,81,83,83,81,79,45,81,79,105,81,76,19,82,71,71,72,119,64,22,71,108,118,13,16,78,40,45,81,76,38,78,45,45,21,16,18,78,16,46,74,74,38,14,22,15,21,18,14,21,23,23,74,23,52,14,22,20,20,18,45,76,47,76,81,73,45,76,47,44,76,76,19,82,109,71,72,79,64,22,67,41,116,13,21,78,119,119,81,33,117,74,115,116,54,23,50,57,58,58,57,51,51,50,53,53,51,54,69,75,72,72,80,105,99,57,99,99,56,98,48,58,3,48,3,53,48,58,63,48,53,52,111,75,113,79,80,105,55,57,101,99,56,116,63,69,65,65,101,101,68,111,65,68,53,108,52,74,112,46,75,75,39,54,39,39,98,52,62,50,70,70,69,69,63,54,63,63,51,15,15,50,108,111,56,56,48,50,111,48,51,20,112,82,5,72,80,77,39,117,101,44,56,44,63,111,96,65,101,27,63,111,65,101,99,113,111,87,113,115,105,27,55,87,68,99,51,116,114,78,11,47,59,59,52,93,34,116,49,38,118,83,11,73,73,73,44,59,97,8,105,9,40,10,4,37,11,25,36,46,37,41,49,4,28,83,25,25,73,25,79,79,31,97,32,28,43,109,7,7,97,25,43,109,31,7,109,37,42,76,37,37,73,28,40,45,43,100,45,40,19,114,28,43,118,34,46,22,43,112,110,42,13,78,1,11,9,35,49,23,28,109,49,6,47,73,37,37,73,25,37,47,37,100,44,37,28,35,25,31,97,31,43,34,31,103,103,28,34,33,25,25,32,35,103,30,31,103,32,28,18,90,112,46,117,110,62,14,70,102,87,18,17,78,10,72,77,106,100,114,96,101,102,102,64,16,36,36,10,112,64,16,36,36,12,40,70,82,43,43,79,79,41,114,43,100,106,46,60,70,61,60,71,24,60,70,60,60,89,36,42,88,40,40,45,46,42,88,40,42,38,42,66,18,64,64,114,114,66,18,64,66,62,16,12,90,6,36,110,114,17,18,17,17,102,13,40,76,37,40,47,47,41,42,41,41,100,40,64,70,67,67,71,29,60,70,67,65,96,36,19,90,24,43,106,31,89,94,67,96,102,88,50,57,58,58,57,57,51,57,53,51,51,50,75,81,77,77,80,80,99,75,99,99,56,80,48,117,0,72,3,59,48,58,68,48,51,52,117,81,77,79,80,80,53,75,77,99,56,117,63,117,71,65,77,101,68,58,65,68,53,108,52,74,112,45,75,75,39,54,39,39,57,38,69,54,70,69,57,75,63,21,70,68,51,20,15,50,118,58,56,56,51,50,116,53,51,20,117,82,72,77,80,80,39,82,77,104,56,44,63,72,65,65,99,27,63,58,65,101,99,113,58,75,106,106,105,27,53,57,103,99,56,116];
+function calibratedTypeFor(loveIndex,noteqIndex,joyIndex){
+  const comboIndex=loveIndex*11*12 + noteqIndex*12 + joyIndex;
+  const pairIndex=calibratedPairByCombo[comboIndex];
+  return {
+    frontKey: calibratedFrontKeys[Math.floor(pairIndex/12)],
+    backKey: calibratedBackKeys[pairIndex%12]
+  };
+}
+
+function getDiagnosis(picks,comboIndex){
+  const keys=Object.keys(dims);
+  const avg={}; const z={};
+  keys.forEach(k=>{
+    avg[k]=Math.round(mean(picks.map(p=>p.s[k])));
+    z[k]=(avg[k]-baselines[k].mean)/baselines[k].sd;
+  });
+  const diversity=mean(keys.map(k=>std(picks.map(p=>p.s[k]))));
+  const ranked=[...keys].sort((a,b)=>z[b]-z[a]);
+
+  // v4ではタイトルの前半と後半を独立採点し、全1,320組の中で120/120種類が
+  // 実際に出現するよう事前校正した割り当てを使用する。本文の共通特徴は従来通り実スコアから算出。
+  const calibrated=calibratedTypeFor(comboIndex.love,comboIndex.noteq,comboIndex.joy);
+  const frontKey=calibrated.frontKey;
+  const backKey=calibrated.backKey;
+  const secondary=(frontKey==='broad') ? ranked[0] : (ranked.find(k=>k!==frontKey) || ranked[1]);
+
+  return {avg,z,diversity,ranked,frontKey,backKey,secondary};
+}
+
+function diagnose(){
+  const picks=[selected.love,selected.noteq,selected.joy];
+  const comboIndex={love:members.love.indexOf(selected.love),noteq:members.noteq.indexOf(selected.noteq),joy:members.joy.indexOf(selected.joy)};
+  const d=getDiagnosis(picks,comboIndex);
+  const front=frontTypes[d.frontKey], back=backTypes[d.backKey];
+  const rawRanked=Object.keys(d.avg).sort((a,b)=>d.avg[b]-d.avg[a]);
+  const common=d.ranked.slice(0,3).map(k=>`${dims[k].emoji} ${dims[k].label}`);
+  const secondKey=d.ranked.find(k=>k!==d.frontKey) || d.ranked[1];
+  const article=`${front.copy} さらに3人には「${dims[secondKey].label}」も比較的共通していて、そこが推し選びの隠れた条件になっていそう。`;
+  const aruaru={
+    observer:'スクショや短い切り抜きより、長めの動画で仕草まで見てから沼が深くなる。',
+    diver:'一度気になると昔のMV・配信・エピソードまで掘り始めて、数日後にはかなり詳しい。',
+    allaffirm:'新衣装、新ビジュ、新投稿。結局だいたい「今回も良い」で回収できる。',
+    watcher:'結果だけじゃなく過程まで見たくなる。「この子が報われてほしい」が推す理由に混ざりがち。',
+    stage:'MVで気になってライブ映像で確定する。歌割りや表情の一瞬を何度も見返しがち。',
+    gradual:'最初は別メンバーを見ていたのに、気づいたらその子ばかり目で追っている。',
+    first:'プロフィールや集合写真を見た段階で「この子気になる」がかなり早い。',
+    researcher:'友達に「どこが好き？」と聞かれると、具体例が3個以上すぐ出てくる。',
+    empathy:'ドキュメンタリーや本人の言葉で推し度が跳ねる。感情が動いた場面をよく覚えている。',
+    recharge:'疲れた日に推しの動画を見ると本当にちょっと元気になる。供給＝回復。',
+    collector:'3人並べて「タイプ同じやん」と言われにくい。でも自分の中ではちゃんと理由がある。',
+    tossed:'「またこの子なんかやってる」で笑って、その予測不能さごと好きになる。'
+  }[d.backKey];
+  const title=`${front.label}${back.label}`;
+  const sub=`${front.copy} ${back.copy}`;
+  renderResult({...d,type:{title,sub},common,article,aruaru,picks,rawRanked});
+}
+
+function renderResult(d){
+  const root=document.getElementById('result');
+  const barKeys=d.ranked.slice(0,5);
+  root.innerHTML=`
+    <div class="result-card">
+      <div class="result-kicker">YOUR OSHI TYPE · 10 × 12 SYSTEM</div>
+      <h2 class="type">${d.type.title}</h2>
+      <p class="type-sub">${d.type.sub}</p>
+      <div class="oshi-row">
+        <span class="oshi-chip">＝LOVE｜${selected.love.name}</span>
+        <span class="oshi-chip">≠ME｜${selected.noteq.name}</span>
+        <span class="oshi-chip">≒JOY｜${selected.joy.name}</span>
+      </div>
+      <div class="section-title">3人から見える刺さりポイント</div>
+      <div class="tags">${d.common.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+      <div class="section-title">推しセンサー</div>
+      <div class="bars">${barKeys.map(k=>`<div class="bar-row"><div class="bar-name">${dims[k].emoji} ${dims[k].label}</div><div class="bar-track"><div class="bar-fill" style="width:${d.avg[k]}%"></div></div><div class="bar-val">${d.avg[k]}</div></div>`).join('')}</div>
+      <div class="grid2">
+        <div class="mini"><b>🔎 惹かれやすいポイント</b>${d.article}</div>
+        <div class="mini"><b>😂 推し活あるある</b>${d.aruaru}</div>
+      </div>
+      <div class="result-actions">
+        <button class="btn primary" id="shareBtn">結果をシェア</button>
+        <button class="btn" id="copyBtn">結果をコピー</button>
+        <button class="btn" id="retryBtn">選び直す</button>
+      </div>
+    </div>`;
+  root.classList.remove('show'); void root.offsetWidth; root.classList.add('show');
+  setTimeout(()=>root.scrollIntoView({behavior:'smooth',block:'start'}),80);
+  document.getElementById('shareBtn').addEventListener('click',shareResult);
+  document.getElementById('copyBtn').addEventListener('click',copyResult);
+  document.getElementById('retryBtn').addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+  window.lastDiagnosis=d;
+}
+function resultText(){
+  const d=window.lastDiagnosis;
+  return `イコノイジョイ推しタイプ診断\n\n＝LOVE：${selected.love.name}\n≠ME：${selected.noteq.name}\n≒JOY：${selected.joy.name}\n\n診断結果：${d.type.title}\n刺さりポイント：${d.common.join(' / ')}\n\n#イコノイジョイ推しタイプ診断`;
+}
+async function shareResult(){
+  const text=resultText();
+  if(navigator.share){try{await navigator.share({title:'イコノイジョイ 推しタイプ診断',text});return}catch(e){if(e.name==='AbortError')return}}
+  await copy(text);
+}
+async function copyResult(){await copy(resultText())}
+async function copy(text){
+  try{await navigator.clipboard.writeText(text)}catch(e){const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove()}
+  const toast=document.getElementById('toast');toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1400);
+}
+
+document.getElementById('diagnoseBtn').addEventListener('click',diagnose);
+renderMembers(); updateAction();
+</script>
+</body>
+</html>
